@@ -1,0 +1,658 @@
+/* ============================ */
+/* Map: Colores institucionales */
+/* ============================ */
+$clrs-instit: (
+  "armonizacion-orofacial": #ef544d,
+  "asistente-dental": #ff7f00,
+  "atm": #007cbd,
+  "auditoria": #ff7f00,
+  "cirugia": #7ab51d,
+  "complementaria": #909bb2,
+  "diagnostico-imagenes": #009791,
+  "discapacidad": #c70119,
+  "endodoncia": #df047a,
+  "estetica-dental": #f4a741,
+  "estomatologia": #ad727b,
+  "farmacologia": #ef8b9d,
+  "fotografia": #ffaa56,
+  "implantologia": #22bbe8,
+  "laser": #069b99,
+  "marketing": #ffaa56,
+  "multidisciplinario": #b194c0,
+  "odontologia-digital": #0e90d0,
+  "odontologia-general": #538daa,
+  "odontopediatria": #c70119,
+  "operatoria": #0e2068,
+  "ortodoncia-ortopedia": #86177f,
+  "ortodoncia": #86177f,
+  "ozonoterapia": #9ab0bc,
+  "periodoncia": #7f2625,
+  "prevencion": #004393,
+  "prostodoncia": #006c32,
+  "todos": $primary,
+);
+
+@each $especialidad, $color in $clrs-instit {
+
+  // Generar una clase personalizada basada en el color actual
+  .btn-#{$especialidad} {
+    background-color: #{$color};
+    color: white;
+  }
+
+  .btn-#{$especialidad}:hover {
+    border: 1px solid #{$color};
+  }
+
+  .border-#{$especialidad} {
+    border-color: #{$color};
+  }
+
+  .bg-#{$especialidad} {
+    background-color: #{$color};
+  }
+
+  .bg-header-#{$especialidad} {
+    background-image: url("../img/capacitaciones/header-#{$especialidad}.jpg"),
+    -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, 0)), to(rgba(0, 0, 0, 0.5)));
+    background-image: url("../img/capacitaciones/header-#{$especialidad}.jpg"),
+    -o-linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5));
+    background-image: url("../img/capacitaciones/header-#{$especialidad}.jpg"),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5));
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-blend-mode: multiply;
+  }
+}
+
+/* ==================== */
+/* Custom Fonts */
+/* ==================== */
+
+@font-face {
+  font-display: swap;
+  /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: "Albert Sans";
+  font-style: normal;
+  font-weight: 400;
+  src: url("../fonts/albert-sans-v1-latin-regular.woff2") format("woff2");
+  /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+@font-face {
+  font-display: swap;
+  /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: "Albert Sans";
+  font-style: italic;
+  font-weight: 400;
+  src: url("../fonts/albert-sans-v1-latin-italic.woff2") format("woff2");
+  /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+@font-face {
+  font-display: swap;
+  /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: "Albert Sans";
+  font-style: normal;
+  font-weight: 700;
+  src: url("../fonts/albert-sans-v1-latin-700.woff2") format("woff2");
+  /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+@font-face {
+  font-display: swap;
+  /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: "Albert Sans";
+  font-style: italic;
+  font-weight: 700;
+  src: url("../fonts/albert-sans-v1-latin-700italic.woff2") format("woff2");
+  /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* ==================== */
+/* Global               */
+/* ==================== */
+body {
+  padding-top: 117px;
+}
+
+@include media-breakpoint-up(md) {
+  body {
+    padding-top: 96px;
+  }
+}
+
+.bg-secondary a:not(.btn) {
+  // Todos los links en divs bg-secondary que no sean botones
+  color: $light;
+}
+
+/* ==================== */
+/* Header               */
+/* ==================== */
+#nav-main {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.navbar-brand {
+  padding: 0;
+}
+
+.navbar-brand .logo.xs {
+  height: 60px;
+  width: auto;
+}
+
+.navbar-brand .logo.md {
+  height: 76px;
+  width: auto;
+}
+
+.offcanvas-header .btn-close {
+  background: none;
+  height: auto;
+  width: auto;
+}
+
+.offcanvas-body {
+  gap: 0.25rem;
+}
+
+#plus-nav {
+  gap: 0.5rem;
+}
+
+#plus-nav .searchform {
+  max-width: 250px;
+}
+
+#plus-nav .searchform>input::placeholder {
+  color: $light;
+  opacity: 0.5;
+}
+
+#plus-nav .searchform .form-control:focus {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  border-color: #8badc6;
+  outline: 0;
+  box-shadow: inset 0 0 0.25rem rgba(22, 91, 140, 0.75);
+}
+
+#bootscore-navbar.navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+#bootscore-navbar.navbar-nav .nav-link:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+#accesos-directos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  font-size: 0.9rem;
+}
+
+/* ==================== */
+/* Search               */
+/* ==================== */
+.search #main article+article {
+  border-top: 1px solid rgba(0, 0, 0, .1);
+  padding-top: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+/* ==================== */
+/* Footer               */
+/* ==================== */
+
+footer .bootscore-footer ul {
+  list-style-type: none;
+  padding-left: 0;
+  margin-left: 0;
+}
+
+.footer-menu>.menu-item {
+  margin-bottom: 1rem;
+}
+
+#menu-coc-social-media>.menu-item>.nav-link::before {
+  display: inline-block;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  font: var(--fa-font-brands);
+  margin-right: $spacer * 0.5;
+}
+
+#menu-coc-social-media>.menu-item.facebook>.nav-link::before {
+  content: "\f09a";
+}
+
+#menu-coc-social-media>.menu-item.instagram>.nav-link::before {
+  content: "\f16d";
+}
+
+#menu-coc-social-media>.menu-item.youtube>.nav-link::before {
+  content: "\f167";
+}
+
+.footer-contact-info ul li {
+  margin-bottom: 1rem;
+}
+
+/* ==================== */
+/* Front Page           */
+/* ==================== */
+#front-carousel {
+  aspect-ratio: 1 / 1;
+}
+
+@include media-breakpoint-up(md) {
+  #front-carousel {
+    aspect-ratio: 16 / 6;
+  }
+}
+
+#front-carousel .carousel-control-prev-icon,
+#front-carousel .carousel-control-next-icon {
+  background-image: none;
+  font-size: 3rem;
+  color: var(--bs-dark);
+  width: 3rem;
+  height: 3rem;
+}
+
+#front-carousel .slide-mas-info {
+  position: absolute;
+  right: 10%;
+  bottom: 10%;
+}
+
+#pacientes {
+  background-image: linear-gradient(to right, #edf4fc, #9cccfc);
+}
+
+#pacientes figure {
+  margin: 0;
+  padding: 0;
+}
+
+#pacientes figure img {
+  width: 100%;
+}
+
+#socios-circulo {
+  padding: 3rem 0;
+}
+
+#socios-circulo h2 {
+  font-size: 4rem;
+  margin-bottom: 2.5rem;
+  text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.5);
+  line-height: 1;
+}
+
+#socios-circulo p {
+  text-wrap: balance;
+  margin-bottom: 2rem;
+}
+
+#socios-circulo figure {
+  margin-bottom: 2rem;
+}
+
+#socios-circulo img {
+  display: block;
+  width: 100px;
+}
+
+#socios-circulo .btn {
+  margin-top: auto;
+}
+
+#capacitaciones-front #filtros-espec-desk {
+  gap: 0.25rem;
+}
+
+#capacitaciones-front .splide__arrow--prev {
+  left: -1.5rem;
+}
+
+#capacitaciones-front .splide__arrow--next {
+  right: -1.5rem;
+}
+
+#capacitaciones-front .capacitacion .card-img-top {
+  aspect-ratio: 16/9;
+  object-fit: cover;
+}
+
+#capacitaciones-front .capacitacion {
+  transition: all 250ms;
+}
+
+#servicios-extension-title>img {
+  width: 100% !important;
+  max-width: 320px;
+}
+
+/* ==================== */
+/* Capacitacion         */
+/* ==================== */
+#header-capacitacion {
+  border-bottom-style: solid;
+  border-bottom-width: 5px;
+}
+
+.detalles-header {
+  height: 40vh;
+  gap: 0.25rem;
+}
+
+#detalles-inscripcion {
+  margin-top: $spacer * 1.25;
+}
+
+@include media-breakpoint-up(md) {
+  #detalles-inscripcion {
+    margin-top: -10rem;
+  }
+}
+
+#detalles-inscripcion>img {
+  aspect-ratio: 16/10;
+  object-fit: cover;
+}
+
+.highlights {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@include media-breakpoint-up(md) {
+  .highlights {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.highlight p {
+  margin-bottom: 0;
+  text-align: center;
+  text-wrap: balance;
+}
+
+#certificantes img {
+  max-width: 140px;
+}
+
+#certificantes {
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+#capacitaciones-sugeridas {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@include media-breakpoint-up(sm) {
+  #capacitaciones-sugeridas {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+}
+
+@include media-breakpoint-up(md) {
+  #capacitaciones-sugeridas {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  #capacitaciones-sugeridas {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+#capacitaciones-sugeridas .card .card-img-top {
+  aspect-ratio: 16/7;
+  object-fit: cover;
+}
+
+/* ==================== */
+/* Especialidades       */
+/* ==================== */
+#capacitaciones-inside .card+.card {
+  margin-top: $spacer;
+}
+
+#capacitaciones-inside .card img {
+  aspect-ratio: 16/6;
+  object-fit: cover;
+  border-top-left-radius: $border-radius;
+  border-top-right-radius: $border-radius;
+  width: 100%;
+  height: 100%;
+}
+
+@include media-breakpoint-up(sm) {
+  #capacitaciones-inside .card img {
+    aspect-ratio: 4/3.5;
+    border-top-left-radius: $border-radius;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: $border-radius;
+  }
+}
+
+/* ==================== */
+/* Páginas              */
+/* ==================== */
+.page-img-header {
+  background-image: url("../img/headers/header-paginas.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  text-align: center;
+}
+
+/* ==================== */
+/* WooCommerce          */
+/* ==================== */
+.shop_table .amount {
+  text-wrap: nowrap;
+}
+
+.payment_box {
+  margin-bottom: 0 !important;
+}
+
+.payment_method_macro_click img {
+  width: auto;
+  height: 24px;
+}
+
+.wc_payment_method+.wc_payment_method {
+  margin-top: .75rem !important;
+  padding-top: .75rem !important;
+  border-top: 1px solid $border-color;
+}
+
+.mp-checkout-pro-checkout-benefits {
+  display: none;
+}
+
+.mp-checkout-pro-payment-methods {
+  padding: 0 !important;
+}
+
+/* ==================== */
+/* Beneficios           */
+/* ==================== */
+#beneficios .card+.card {
+  margin-top: $spacer;
+}
+
+#beneficios .card img {
+  aspect-ratio: 16/6;
+  object-fit: cover;
+  border-top-left-radius: $border-radius;
+  border-top-right-radius: $border-radius;
+  width: 100%;
+  height: 100%;
+}
+
+@include media-breakpoint-up(sm) {
+  #beneficios .card img {
+    aspect-ratio: 4/3.5;
+    border-top-left-radius: $border-radius;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: $border-radius;
+  }
+}
+
+.beneficio-template-default .post-thumbnail {
+  max-width: 220px;
+  float: left;
+  margin-bottom: 1.25rem;
+  margin-right: 1.25rem;
+}
+
+/* ======================== */
+/* Capacitaciones iniciadas */
+/* ======================== */
+#capacitaciones-iniciadas .card+.card {
+  margin-top: $spacer;
+}
+
+#capacitaciones-iniciadas .card img {
+  aspect-ratio: 16/6;
+  border-top-left-radius: $border-radius;
+  border-top-right-radius: $border-radius;
+  filter: grayscale(1);
+  -webkit-filter: grayscale(1);
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+@include media-breakpoint-up(sm) {
+  #capacitaciones-iniciadas .card img {
+    aspect-ratio: 4/3.5;
+    border-top-left-radius: $border-radius;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: $border-radius;
+  }
+}
+
+/* ======================== */
+/* Sociedades Filiales      */
+/* ======================== */
+#sociedades-filiales #app-root {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@include media-breakpoint-up(md) {
+  #sociedades-filiales #app-root {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  #sociedades-filiales #app-root {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+#sociedades-filiales .card-img-top {
+  aspect-ratio: 1/1;
+  object-fit: cover;
+}
+
+/* ======================== */
+/* Clasificados             */
+/* ======================== */
+#clasificados {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@include media-breakpoint-up(md) {
+  #clasificados {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+#clasificados .card img {
+  object-fit: cover;
+}
+
+/* ======================== */
+/* WhatsApp Shortcut        */
+/* ======================== */
+#whatsapp-shortcut {
+  position: fixed;
+  display: block;
+  bottom: 1rem;
+  right: 1rem;
+  line-height: 1;
+  font-size: 2rem;
+  opacity: 0.75;
+  padding: 12px 14px;
+  transition: all 0.5s;
+}
+
+#whatsapp-shortcut:hover {
+  opacity: 1;
+}
+
+
+/* ======================== */
+/* Gallery Albums Covers    */
+/* ======================== */
+
+#show_sv_galleries {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@include media-breakpoint-up(md) {
+  #show_sv_galleries {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  #show_sv_galleries {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.sv_gallery_access {
+  aspect-ratio: 16 / 9;
+  background-color: $secondary;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-blend-mode: luminosity;
+  color: white;
+  opacity: .8;
+  text-decoration: none;
+  text-shadow: 0 0 6px black;
+  transition: all 300ms;
+}
+
+.sv_gallery_access:hover {
+  opacity: 1;
+  background-color: none;
+  background-blend-mode: normal;
+}
+
+.payment_method_macro_click>label>img {
+  height: 32px;
+}
