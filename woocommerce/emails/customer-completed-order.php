@@ -51,9 +51,9 @@ foreach ($order_items as $order_item) {
 }
 
 if ($variation_check): ?>
-	<p>Tu pedido de inscripción ha sido procesado correctamente.</p>
+	<p>Tu pedido de inscripción se ha completado correctamente.</p>
 <?php else : ?>
-	<p>Tu pedido de pre-inscripción ha sido procesado correctamente.</p>
+	<p>Tu pedido de pre-inscripción se ha completado correctamente.</p>
 <?php endif; ?>
 
 <div style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
