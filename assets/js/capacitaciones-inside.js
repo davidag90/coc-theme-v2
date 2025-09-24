@@ -10,19 +10,17 @@ async function setData(url) {
   const posts = data.map(async (element) => {
     let post = {};
 
-    post.tipoCapacitacion = element.acf.tipo_capacitacion;
-    post.especialidadSlug = element._embedded["wp:term"][0][0].slug;
-    post.especialidadNombre = element._embedded["wp:term"][0][0].name;
-    post.dictante = element.acf.dictante_principal_txt;
-    post.titulo = element.title.rendered;
-    post.fechaInicio = element.acf.fecha_inicio;
-    post.fechaInicioDF = element.acf.fecha_inicio_dateformat;
+    post.tipoCapacitacion = element.tipo_capacitacion;
+    post.especialidadSlug = element.especialidad_slug;
+    post.especialidadNombre = element.especialidad_name;
+    post.dictante = element.dictante_principal;
+    post.titulo = element.titulo;
+    post.fechaInicio = element.fecha_inicio;
+    post.fechaInicioDF = element.fecha_inicio_df;
     post.link = element.link;
 
-    const thumbURL = element?._embedded?.["wp:featuredmedia"]?.[0]?.["media_details"]?.["sizes"]?.["medium"]?.["source_url"] ?? null;
-
-    if (element.featured_media !== null) {
-      post.thumbnail = thumbURL;
+    if (element.thumbnail !== null) {
+      post.thumbnail = element.thumbnail;
     } else {
       post.thumbnail = THEME_URL + "img/capacitaciones/placeholder.jpg";
     }
@@ -58,8 +56,16 @@ function createItem(objCapacitacion) {
 
 function fillCapacitaciones(jsonCapacitaciones, especialidad = "todos") {
   jsonCapacitaciones.sort((a, b) => {
-    const dateA = new Date(a.fechaInicioDF.slice(0, 4), a.fechaInicioDF.slice(4, 6) - 1, a.fechaInicioDF.slice(6, 8));
-    const dateB = new Date(b.fechaInicioDF.slice(0, 4), b.fechaInicioDF.slice(4, 6) - 1, b.fechaInicioDF.slice(6, 8));
+    const dateA = new Date(
+      a.fechaInicioDF.slice(0, 4),
+      a.fechaInicioDF.slice(4, 6) - 1,
+      a.fechaInicioDF.slice(6, 8)
+    );
+    const dateB = new Date(
+      b.fechaInicioDF.slice(0, 4),
+      b.fechaInicioDF.slice(4, 6) - 1,
+      b.fechaInicioDF.slice(6, 8)
+    );
 
     return dateA - dateB;
   });
@@ -68,23 +74,11 @@ function fillCapacitaciones(jsonCapacitaciones, especialidad = "todos") {
   preloader.classList.add("d-none");
 
   jsonCapacitaciones.forEach((element) => {
-    const minuto = 1000 * 60;
-    const hora = minuto * 60;
-    const dia = hora * 24;
-
-    const hoy = new Date().valueOf();
-    const limite = new Date(hoy - dia * 2);
-    console.log(limite.toString());
-
-    const fechaCapacitacion = new Date(element.fechaInicioDF.slice(0, 4), element.fechaInicioDF.slice(4, 6) - 1, element.fechaInicioDF.slice(6, 8));
-
-    if (limite < fechaCapacitacion) {
-      if (especialidad === "todos") {
+    if (especialidad === "todos") {
+      createItem(element);
+    } else {
+      if (especialidad === element.especialidadSlug) {
         createItem(element);
-      } else {
-        if (especialidad === element.especialidadSlug) {
-          createItem(element);
-        }
       }
     }
   });
@@ -108,7 +102,9 @@ function setFiltros() {
     });
   });
 
-  const filtrosMobile = document.querySelector("#filtros-espec-mobile > select");
+  const filtrosMobile = document.querySelector(
+    "#filtros-espec-mobile > select"
+  );
 
   filtrosMobile.addEventListener("change", (event) => {
     let especialidad = event.target.value;
@@ -120,7 +116,10 @@ function setFiltros() {
 }
 
 const appRoot = document.getElementById("app-root");
-const capacitaciones = await setData(API_CAPACITACIONES_URL);
+const capacitaciones = await setData(API_CAPACITACIONES_VIGENTES_URL);
 
-document.addEventListener("DOMContentLoaded", fillCapacitaciones(capacitaciones));
+document.addEventListener(
+  "DOMContentLoaded",
+  fillCapacitaciones(capacitaciones)
+);
 document.addEventListener("DOMContentLoaded", setFiltros());
