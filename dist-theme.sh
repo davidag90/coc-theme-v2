@@ -3,8 +3,7 @@
 # Configuración
 THEME_NAME=$(basename "$(pwd)")
 OUTPUT_DIR="./dist"
-TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-ZIP_NAME="${THEME_NAME}-${TIMESTAMP}.zip"
+ZIP_NAME="${THEME_NAME}.zip"
 
 # Crear directorio de salida si no existe
 mkdir -p "$OUTPUT_DIR"
@@ -22,7 +21,7 @@ fi
 # Verificar que no hay cambios sin commitear (opcional)
 if [ -n "$(git status --porcelain)" ]; then
     echo "⚠️  Advertencia: Hay cambios sin commitear. El ZIP solo incluirá archivos commiteados."
-    read -p "¿Continuar? (y/N): " -n 1 -r
+    read -p "¿Continuar? (Y/N): " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         exit 1
