@@ -2,3 +2,5 @@
 css/main.css
 css/main.map
 node_modules
+dist
+dist-theme.sh
