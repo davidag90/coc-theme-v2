@@ -2,7 +2,7 @@
 
 # Configuración
 THEME_NAME=$(basename "$(pwd)")
-OUTPUT_DIR="../dist"
+OUTPUT_DIR="./dist"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 ZIP_NAME="${THEME_NAME}-${TIMESTAMP}.zip"
 
