@@ -5,7 +5,8 @@ async function fetchData(url) {
 }
 
 async function setData(url) {
-  const data = await fetchData(url);
+  const response = await fetchData(url);
+  const data = response.data;
 
   const posts = data.map(async (element) => {
     let post = {};

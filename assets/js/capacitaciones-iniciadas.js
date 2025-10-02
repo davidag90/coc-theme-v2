@@ -5,7 +5,8 @@ async function fetchData(url) {
 }
 
 async function setData(url) {
-  const data = await fetchData(url);
+  const response = await fetchData(url);
+  const data = response.data;
 
   const posts = data.map(async (element) => {
     let post = {};
@@ -54,7 +55,7 @@ function createItem(objCapacitacion) {
   appRoot.innerHTML += item;
 }
 
-function fillCapacitaciones(jsonCapacitaciones, especialidad = "todos") {
+function fillCapacitaciones(jsonCapacitaciones) {
   jsonCapacitaciones.sort((a, b) => {
     const dateA = new Date(
       a.fechaInicioDF.slice(0, 4),
@@ -69,56 +70,73 @@ function fillCapacitaciones(jsonCapacitaciones, especialidad = "todos") {
     return dateB - dateA;
   });
 
-  let preloader = document.getElementById("preloader");
+  const preloader = document.getElementById("preloader");
   preloader.classList.add("d-none");
 
   jsonCapacitaciones.forEach((element) => {
-    if (especialidad === "todos") {
-      createItem(element);
-    } else {
-      if (especialidad === element.especialidadSlug) {
-        createItem(element);
-      }
-    }
+    createItem(element);
   });
+
+  pageCount++;
 }
 
-function setFiltros() {
-  const filtros = document.querySelectorAll(".filtro-espec");
+let pageCount = 1;
+let isLoading = false; // Flag para evitar múltiples cargas simultáneas
 
-  filtros.forEach((filtro) => {
-    let especialidad = filtro.getAttribute("coc-especialidad");
-
-    filtro.addEventListener("click", (event) => {
-      appRoot.innerHTML = "";
-      fillCapacitaciones(capacitaciones, especialidad);
-
-      filtros.forEach((elem) => {
-        elem.classList.remove("active");
-      });
-
-      event.target.classList.add("active");
-    });
-  });
-
-  const filtrosMobile = document.querySelector(
-    "#filtros-espec-mobile > select"
-  );
-
-  filtrosMobile.addEventListener("change", (event) => {
-    let especialidad = event.target.value;
-
-    appRoot.innerHTML = "";
-
-    fillCapacitaciones(capacitaciones, especialidad);
-  });
-}
-
+const footer = document.querySelector("#page.site > footer");
 const appRoot = document.getElementById("app-root");
-const capacitaciones = await setData(API_CAPACITACIONES_INICIADAS_URL);
 
-document.addEventListener(
-  "DOMContentLoaded",
-  fillCapacitaciones(capacitaciones)
+const observer = new IntersectionObserver(
+  (entries, observer) => {
+    entries.forEach(async (entry) => {
+      if (entry.isIntersecting && !isLoading) {
+        isLoading = true;
+
+        const preloader = document.getElementById("preloader");
+        preloader.classList.remove("d-none");
+
+        try {
+          const capacitaciones = await setData(
+            `${API_CAPACITACIONES_INICIADAS_URL}?page=${pageCount}`
+          );
+
+          if (capacitaciones && capacitaciones.length > 0) {
+            fillCapacitaciones(capacitaciones);
+          } else {
+            observer.unobserve(footer);
+            preloader.classList.add("d-none");
+          }
+        } catch (error) {
+          console.error("Error cargando capacitaciones:", error);
+          preloader.classList.add("d-none");
+        } finally {
+          isLoading = false;
+        }
+      }
+    });
+  },
+  {
+    root: null,
+    rootMargin: "0px",
+    scrollMargin: "0px",
+    threshold: 0.25,
+  }
 );
-document.addEventListener("DOMContentLoaded", setFiltros());
+
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const capacitacionesStart = await setData(
+      `${API_CAPACITACIONES_INICIADAS_URL}?page=${pageCount}`
+    );
+
+    if (capacitacionesStart && capacitacionesStart.length > 0) {
+      fillCapacitaciones(capacitacionesStart);
+
+      observer.observe(footer);
+    }
+  } catch (error) {
+    console.error("Error en carga inicial de capacitaciones:", error);
+    const preloader = document.getElementById("preloader");
+    preloader.classList.add("d-none");
+  }
+});
