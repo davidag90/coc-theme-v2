@@ -20,41 +20,43 @@ add_action('wp_enqueue_scripts', 'custom_scripts_libs');
 
 function custom_scripts_libs()
 {
-	wp_enqueue_script('custom-js', get_stylesheet_directory_uri() . '/assets/js/custom.js', false, '', true);
+	$theme_ver = wp_get_theme()->get('Version');
+
+	wp_enqueue_script('custom-js', get_stylesheet_directory_uri() . '/assets/js/custom.js', array(), $theme_ver, true);
 	wp_localize_script('custom-js', 'envParams', array(
 		'SITE_URL' => esc_url(home_url()) . '/'
 	));
 
-	wp_enqueue_script('env', get_stylesheet_directory_uri() . '/assets/js/env.js', array(), false, false);
+	wp_enqueue_script('env', get_stylesheet_directory_uri() . '/assets/js/env.js', array(), $theme_ver, false);
 	wp_localize_script('env', 'envParams', array(
 		'SITE_URL' => esc_url(home_url()) . '/'
 	));
 
 	if (is_front_page()) :
 		wp_enqueue_script('splide-js', get_stylesheet_directory_uri() . '/assets/js/splide.min.js', array(), null, true);
-		wp_enqueue_style('splide-css', get_stylesheet_directory_uri() . '/assets/css/splide-default.min.css', array(), null);
+		wp_enqueue_style('splide-css', get_stylesheet_directory_uri() . '/assets/css/splide-default.min.css', array(), false);
 
-		wp_enqueue_script('capacitaciones-front', get_stylesheet_directory_uri() . '/assets/js/capacitaciones-front.js', false, array('env', 'splide-js'), true);
+		wp_enqueue_script('capacitaciones-front', get_stylesheet_directory_uri() . '/assets/js/capacitaciones-front.js', array('env', 'splide-js'), $theme_ver, true);
 	endif;
 
 	if (is_page('capacitaciones-iniciadas')) :
-		wp_enqueue_script('capacitaciones-iniciadas', get_stylesheet_directory_uri() . '/assets/js/capacitaciones-iniciadas.js', array('env'), null, true);
+		wp_enqueue_script('capacitaciones-iniciadas', get_stylesheet_directory_uri() . '/assets/js/capacitaciones-iniciadas.js', array('env'), $theme_ver, true);
 	endif;
 
 	if (is_page('especialidades')) :
-		wp_enqueue_script('capacitaciones-inside', get_stylesheet_directory_uri() . '/assets/js/capacitaciones-inside.js', array('env'), null, true);
+		wp_enqueue_script('capacitaciones-inside', get_stylesheet_directory_uri() . '/assets/js/capacitaciones-inside.js', array('env'), $theme_ver, true);
 	endif;
 
 	if (is_page('beneficios')) :
-		wp_enqueue_script('beneficios', get_stylesheet_directory_uri() . '/assets/js/beneficios.js', array('env'), null, true);
+		wp_enqueue_script('beneficios', get_stylesheet_directory_uri() . '/assets/js/beneficios.js', array('env'), $theme_ver, true);
 	endif;
 
 	if (is_page('sociedades-filiales')) :
-		wp_enqueue_script('sociedades', get_stylesheet_directory_uri() . '/assets/js/sociedades.js', array('env'), null, true);
+		wp_enqueue_script('sociedades', get_stylesheet_directory_uri() . '/assets/js/sociedades.js', array('env'), $theme_ver, true);
 	endif;
 
 	if (is_singular('capacitaciones')) :
-		wp_enqueue_script('handler-inscripcion', get_stylesheet_directory_uri() . '/assets/js/handler-inscripcion.js', array('env'), null, true);
+		wp_enqueue_script('handler-inscripcion', get_stylesheet_directory_uri() . '/assets/js/handler-inscripcion.js', array('env'), $theme_ver, true);
 	endif;
 
 	// Load CF7 libs only in specific pages
@@ -106,131 +108,9 @@ add_action('rest_api_init', 'include_custom_api_routes');
 
 function include_custom_api_routes()
 {
-	require_once(__DIR__ . '/inc/custom-rest-api.php');
+	require_once(__DIR__ . '/inc/custom-rest-api-routes.php');
+	require_once(__DIR__ . '/inc/custom-rest-api-functions.php');
 }
-
-/**
- * Custom REST API functions
- */
-function get_capacitaciones_vigentes(WP_REST_Request $request)
-{
-	$today = current_time('Ymd');
-
-	$query_args = array(
-		'post_type' => 'capacitaciones',
-		'nopaging' => 'true',
-		'meta_query' => array(
-			array(
-				'key' => 'fecha_inicio_dateformat',
-				'value' => $today,
-				'compare' => '>',
-				'type' => 'DATE',
-			),
-		),
-		'tax_query' => array(
-			array(
-				'taxonomy' => 'especialidad',
-				'field' => 'slug',
-				'operator' => 'EXISTS',
-			),
-		),
-	);
-
-	$capacitaciones = new WP_Query($query_args);
-
-	return process_capacitaciones($capacitaciones);
-}
-
-function process_capacitaciones(WP_Query $capacitaciones)
-{
-	$data = [];
-
-	if ($capacitaciones->have_posts()) {
-		while ($capacitaciones->have_posts()) {
-			$capacitaciones->the_post();
-
-			$post = get_post();
-			$capacitacion = get_capacitacion_info($post);
-
-			$data[] = $capacitacion;
-		}
-	}
-
-	wp_reset_postdata();
-
-	if (!count($data) > 0) {
-		return 'No se han encontrado contenidos de este tipo';
-	}
-
-	return $data;
-}
-
-function get_capacitaciones_iniciadas(WP_REST_Request $request)
-{
-	$today = current_time('Ymd');
-
-	$query_args = array(
-		'post_type' => 'capacitaciones',
-		'posts_per_page' => -1, // Retrieve all posts
-		'meta_query' => array(
-			array(
-				'key' => 'fecha_inicio_dateformat',
-				'value' => $today,
-				'compare' => '<=',
-				'type' => 'DATE',
-			),
-		),
-		'tax_query' => array(
-			array(
-				'taxonomy' => 'especialidad',
-				'field' => 'slug',
-				'operator' => 'EXISTS',
-			),
-		),
-	);
-
-	$capacitaciones = new WP_Query($query_args);
-
-	return process_capacitaciones($capacitaciones);
-}
-
-function get_capacitacion_info($post = null)
-{
-	if (!$post || !is_object($post)) {
-		return null;
-	}
-
-	$post_id = $post->ID;
-
-	$post_title = $post->post_title;
-	$post_tipo_capacitacion = get_post_meta($post_id, 'tipo_capacitacion', true) ?: '';
-	$post_especialidad_terms = get_the_terms($post_id, 'especialidad');
-	if ($post_especialidad_terms && !is_wp_error($post_especialidad_terms)) {
-		$post_especialidad_slug = $post_especialidad_terms[0]->slug ?? '';
-		$post_especialidad_name = $post_especialidad_terms[0]->name ?? '';
-	}
-	$post_dictante_principal =  get_post_meta($post_id, 'dictante_principal_txt', true) ?: '';
-	$post_fecha_inicio =        get_post_meta($post_id, 'fecha_inicio', true) ?: '';
-	$post_fecha_inicio_df =     get_post_meta($post_id, 'fecha_inicio_dateformat', true) ?: '';
-	$post_link = get_permalink($post_id);
-	$post_thumbnail = get_the_post_thumbnail_url($post_id, 'medium');
-
-	$info_capacitacion = [
-		"id" => $post_id,
-		"titulo" => sanitize_text_field($post_title),
-		"tipo_capacitacion" => sanitize_text_field($post_tipo_capacitacion),
-		"especialidad_slug" => sanitize_text_field($post_especialidad_slug),
-		"especialidad_name" => sanitize_text_field($post_especialidad_name),
-		"dictante_principal" => sanitize_text_field($post_dictante_principal),
-		"fecha_inicio" => sanitize_text_field($post_fecha_inicio),
-		"fecha_inicio_df" => sanitize_text_field($post_fecha_inicio_df),
-		"link" => esc_url($post_link),
-		"thumbnail" => esc_url($post_thumbnail),
-	];
-
-	return $info_capacitacion;
-}
-
 
 
 add_action('widgets_init', 'manage_custom_sidebars', 11);
