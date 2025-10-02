@@ -83,24 +83,21 @@ function createSlide(objCapacitacion) {
 
 function fillCapacitaciones(jsonCapacitaciones, especialidad = "todos") {
   jsonCapacitaciones.sort((a, b) => {
-    // Verifica si 'a' o 'b' son null/undefined o no tienen la propiedad fechaInicioDF
     const aFechaInicio = a && a.fechaInicioDF;
     const bFechaInicio = b && b.fechaInicioDF;
 
-    // Si a.fechaInicioDF es null/undefined y b.fechaInicioDF no lo es, 'a' va al final
     if (!aFechaInicio && bFechaInicio) {
       return 1;
     }
-    // Si b.fechaInicioDF es null/undefined y a.fechaInicioDF no lo es, 'b' va al final
+
     if (aFechaInicio && !bFechaInicio) {
       return -1;
     }
-    // Si ambos son null/undefined, su orden relativo no importa (o puedes decidir un orden específico)
+
     if (!aFechaInicio && !bFechaInicio) {
       return 0;
     }
 
-    // Si ambos tienen fechaInicioDF, realiza la comparación normal
     const dateA = new Date(
       a.fechaInicioDF.slice(0, 4),
       a.fechaInicioDF.slice(4, 6) - 1,
@@ -118,28 +115,6 @@ function fillCapacitaciones(jsonCapacitaciones, especialidad = "todos") {
   preloader.classList.add("d-none");
 
   jsonCapacitaciones.forEach((element) => {
-    /* const minuto = 1000 * 60;
-    const hora = minuto * 60;
-    const dia = hora * 24;
-
-    const hoy = new Date().valueOf();
-    const limite = new Date(hoy - dia * 2);
-
-    const fechaCapacitacion = new Date(
-      element.fechaInicioDF.slice(0, 4),
-      element.fechaInicioDF.slice(4, 6) - 1,
-      element.fechaInicioDF.slice(6, 8)
-    );
-
-    if (limite < fechaCapacitacion) {
-      if (especialidad === "todos") {
-        createSlide(element);
-      } else {
-        if (especialidad === element.especialidadSlug) {
-          createSlide(element);
-        }
-      }
-    } */
     if (especialidad === "todos") {
       createSlide(element);
     } else {
