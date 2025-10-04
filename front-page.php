@@ -36,12 +36,12 @@
   								<?php endif; ?>
   								<picture>
   									<?php
-										$slide_desktop = get_field('slide_desktop');
 										$slide_mobile = get_field('slide_mobile');
+										$slide_desktop = get_field('slide_desktop');
 										?>
 
   									<source srcset="<?php echo esc_url($slide_mobile['url']); ?>" class="d-block w-100" media="(max-width:768px)">
-  									<img src="<?php echo esc_url($slide_desktop['url']); ?>" class="d-block w-100">
+  									<img src="<?php echo esc_url($slide_desktop['url']); ?>" class="d-block w-100" fetchpriority="high">
   								</picture>
   								<?php if ($link) : // Verificación para cerrar el <a> y agregar un boton 
 									?>
