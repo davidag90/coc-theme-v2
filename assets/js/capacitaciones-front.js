@@ -1,36 +1,4 @@
-async function fetchData(url) {
-  const response = await fetch(url);
-
-  return await response.json();
-}
-
-async function setData(url) {
-  const response = await fetchData(url);
-  const data = response.data;
-
-  const posts = data.map(async (element) => {
-    let post = {};
-
-    post.tipoCapacitacion = element.tipo_capacitacion;
-    post.especialidadSlug = element.especialidad_slug;
-    post.especialidadNombre = element.especialidad_name;
-    post.dictante = element.dictante_principal;
-    post.titulo = element.titulo;
-    post.fechaInicio = element.fecha_inicio;
-    post.fechaInicioDF = element.fecha_inicio_df;
-    post.link = element.link;
-
-    if (element.thumbnail !== null) {
-      post.thumbnail = element.thumbnail;
-    } else {
-      post.thumbnail = THEME_URL + "img/capacitaciones/placeholder.jpg";
-    }
-
-    return post;
-  });
-
-  return Promise.all(posts);
-}
+import { setData } from "./capacitaciones.js";
 
 function startSplide() {
   const splideCapacitaciones = new Splide(".splide", {
@@ -62,68 +30,47 @@ function startSplide() {
   splideCapacitaciones.mount();
 }
 
-function createSlide(objCapacitacion) {
-  let slide = `
-      <li class="splide__slide">
-         <div class="card capacitacion border-${objCapacitacion.especialidadSlug} h-100 position-relative" coc-especialidad="${objCapacitacion.especialidadSlug}">
-            <img src="${objCapacitacion.thumbnail}" class="card-img-top" />
-            <div class="card-body d-flex flex-column">
-               <h3 class="h5 card-title">${objCapacitacion.titulo}</h3>
-               <span class="d-block text-secondary mb-3"><small>${objCapacitacion.tipoCapacitacion} en ${objCapacitacion.especialidadNombre}</small></span>
-               <p class="card-text">${objCapacitacion.dictante}</p>
-               <p class="card-text opacity-75">${objCapacitacion.fechaInicio}</p>
-               <a href="${objCapacitacion.link}" class="btn btn-sm btn-${objCapacitacion.especialidadSlug} ms-auto mt-auto stretched-link">Más información &rarr;</a>
-            </div><!-- .card-body -->
-         </div><!-- .capacitacion -->
-      </li><!-- .splide__slide -->
+function createItem(objCapacitacion) {
+  const slide = document.createElement("li");
+  slide.className = "splide__slide";
+  slide.setAttribute("coc-especialidad", objCapacitacion.especialidadSlug);
+
+  slide.innerHTML = `
+    <div class="card capacitacion border-${objCapacitacion.especialidadSlug} h-100 position-relative" coc-especialidad="${objCapacitacion.especialidadSlug}">
+      <img src="${objCapacitacion.thumbnail}" class="card-img-top" />
+      <div class="card-body d-flex flex-column">
+          <h3 class="h5 card-title">${objCapacitacion.titulo}</h3>
+          <span class="d-block text-secondary mb-3"><small>${objCapacitacion.tipoCapacitacion} en ${objCapacitacion.especialidadNombre}</small></span>
+          <p class="card-text">${objCapacitacion.dictante}</p>
+          <p class="card-text opacity-75">${objCapacitacion.fechaInicio}</p>
+          <a href="${objCapacitacion.link}" class="btn btn-sm btn-${objCapacitacion.especialidadSlug} ms-auto mt-auto stretched-link">Más información &rarr;</a>
+      </div><!-- .card-body -->
+    </div><!-- .capacitacion -->
    `;
 
-  appRoot.innerHTML += slide;
+  return slide;
 }
 
-function fillCapacitaciones(jsonCapacitaciones, especialidad = "todos") {
-  jsonCapacitaciones.sort((a, b) => {
-    const aFechaInicio = a && a.fechaInicioDF;
-    const bFechaInicio = b && b.fechaInicioDF;
-
-    if (!aFechaInicio && bFechaInicio) {
-      return 1;
-    }
-
-    if (aFechaInicio && !bFechaInicio) {
-      return -1;
-    }
-
-    if (!aFechaInicio && !bFechaInicio) {
-      return 0;
-    }
-
-    const dateA = new Date(
-      a.fechaInicioDF.slice(0, 4),
-      a.fechaInicioDF.slice(4, 6) - 1,
-      a.fechaInicioDF.slice(6, 8)
-    );
-    const dateB = new Date(
-      b.fechaInicioDF.slice(0, 4),
-      b.fechaInicioDF.slice(4, 6) - 1,
-      b.fechaInicioDF.slice(6, 8)
-    );
-    return dateA - dateB;
-  });
-
-  let preloader = document.getElementById("preloader");
+function fillCapacitaciones(jsonCapacitaciones, especialidad) {
   preloader.classList.add("d-none");
 
-  jsonCapacitaciones.forEach((element) => {
-    if (especialidad === "todos") {
-      createSlide(element);
-    } else {
-      if (especialidad === element.especialidadSlug) {
-        createSlide(element);
-      }
-    }
-  });
+  let slides = [];
 
+  if (!especialidad || especialidad === "") {
+    slides = jsonCapacitaciones.map((objCapacitacion) =>
+      createItem(objCapacitacion)
+    );
+  } else {
+    const filterSlides = jsonCapacitaciones.filter(
+      (element) => especialidad === element.especialidadSlug
+    );
+
+    slides = filterSlides.map((objCapacitacion) => createItem(objCapacitacion));
+  }
+
+  console.log(slides);
+
+  appRoot.replaceChildren(...slides);
   startSplide();
 }
 
@@ -131,10 +78,11 @@ function setFiltros() {
   const filtros = document.querySelectorAll(".filtro-espec");
 
   filtros.forEach((filtro) => {
-    let especialidad = filtro.getAttribute("coc-especialidad");
+    const especialidad = filtro.getAttribute("coc-especialidad");
 
     filtro.addEventListener("click", (event) => {
-      appRoot.innerHTML = "";
+      appRoot.replaceChildren();
+
       fillCapacitaciones(capacitaciones, especialidad);
 
       filtros.forEach((elem) => {
@@ -153,9 +101,9 @@ function setFiltros() {
   );
 
   filtrosMobile.addEventListener("change", (event) => {
-    let especialidad = event.target.value;
+    const especialidad = event.target.value;
 
-    appRoot.innerHTML = "";
+    appRoot.replaceChildren();
 
     fillCapacitaciones(capacitaciones, especialidad);
   });
@@ -164,10 +112,12 @@ function setFiltros() {
 const appRoot = document.querySelector(
   ".splide > .splide__track > .splide__list"
 );
+const preloader = document.getElementById("preloader");
 const capacitaciones = await setData(API_CAPACITACIONES_VIGENTES_URL);
 
 document.addEventListener(
   "DOMContentLoaded",
   fillCapacitaciones(capacitaciones)
 );
+
 document.addEventListener("DOMContentLoaded", setFiltros());

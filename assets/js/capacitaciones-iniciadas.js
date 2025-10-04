@@ -1,90 +1,140 @@
-async function fetchData(url) {
-  const response = await fetch(url);
-
-  return await response.json();
-}
-
-async function setData(url) {
-  const response = await fetchData(url);
-  const data = response.data;
-
-  const posts = data.map(async (element) => {
-    let post = {};
-
-    post.tipoCapacitacion = element.tipo_capacitacion;
-    post.especialidadSlug = element.especialidad_slug;
-    post.especialidadNombre = element.especialidad_name;
-    post.dictante = element.dictante_principal;
-    post.titulo = element.titulo;
-    post.fechaInicio = element.fecha_inicio;
-    post.fechaInicioDF = element.fecha_inicio_df;
-    post.link = element.link;
-
-    if (element.thumbnail !== null) {
-      post.thumbnail = element.thumbnail;
-    } else {
-      post.thumbnail = THEME_URL + "img/capacitaciones/placeholder.jpg";
-    }
-
-    return post;
-  });
-
-  return Promise.all(posts);
-}
+import { setData } from "./capacitaciones.js";
 
 function createItem(objCapacitacion) {
-  let item = `
-      <div class="card capacitacion border-dark-subtle bg-dark bg-opacity-10" coc-especialidad="${objCapacitacion.especialidadSlug}">
-         <div class="row g-0">
-            <div class="col-sm-4">
-               <img src="${objCapacitacion.thumbnail}" class="img-fluid" />
-            </div><!-- .col-sm-4 -->
-            <div class="col-sm-8">
-               <div class="card-body d-flex flex-column h-100">
-                  <h3 class="card-title h5">${objCapacitacion.titulo}</h3>
-                  <span class="d-block text-secondary mb-3"><small>${objCapacitacion.tipoCapacitacion} en ${objCapacitacion.especialidadNombre}</small></span>
-                  <p class="card-text">${objCapacitacion.dictante}</p>
-                  <p class="card-text opacity-75">${objCapacitacion.fechaInicio}</p>
-                  <a href="${objCapacitacion.link}" class="btn btn-sm btn-dark d-inline-block ms-auto mt-auto">Más información &rarr;</a>
-               </div><!-- .card-body -->
-            </div><!-- .col-sm-8 -->
-         </div><!-- .row -->
-      </div><!-- .card -->
-   `;
+  const card = document.createElement("div");
+  card.className = "card capacitacion border-dark-subtle bg-dark bg-opacity-10";
+  card.setAttribute("coc-especialidad", objCapacitacion.especialidadSlug);
 
-  appRoot.innerHTML += item;
+  card.innerHTML = `
+    <div class="row g-0">
+      <div class="col-sm-4">
+        <img src="${objCapacitacion.thumbnail}" class="img-fluid" />
+      </div>
+      <div class="col-sm-8">
+        <div class="card-body d-flex flex-column h-100">
+          <h3 class="card-title h5">${objCapacitacion.titulo}</h3>
+          <span class="d-block text-secondary mb-3"><small>${objCapacitacion.tipoCapacitacion} en ${objCapacitacion.especialidadNombre}</small></span>
+          <p class="card-text">${objCapacitacion.dictante}</p>
+          <p class="card-text opacity-75">${objCapacitacion.fechaInicio}</p>
+          <a href="${objCapacitacion.link}" class="btn btn-sm btn-dark d-inline-block ms-auto mt-auto">Más información &rarr;</a>
+        </div>
+      </div>
+    </div>
+  `;
+
+  return card;
 }
 
 function fillCapacitaciones(jsonCapacitaciones) {
-  jsonCapacitaciones.sort((a, b) => {
-    const dateA = new Date(
-      a.fechaInicioDF.slice(0, 4),
-      a.fechaInicioDF.slice(4, 6) - 1,
-      a.fechaInicioDF.slice(6, 8)
-    );
-    const dateB = new Date(
-      b.fechaInicioDF.slice(0, 4),
-      b.fechaInicioDF.slice(4, 6) - 1,
-      b.fechaInicioDF.slice(6, 8)
-    );
-    return dateB - dateA;
-  });
-
-  const preloader = document.getElementById("preloader");
   preloader.classList.add("d-none");
 
-  jsonCapacitaciones.forEach((element) => {
-    createItem(element);
-  });
+  const capacitaciones = jsonCapacitaciones.map((objCapacitacion) =>
+    createItem(objCapacitacion)
+  );
+
+  if (pageCount === 1) {
+    appRoot.replaceChildren(...capacitaciones);
+  } else {
+    appRoot.append(...capacitaciones);
+  }
 
   pageCount++;
 }
 
+function applyEspecialidadFilter() {
+  const filters = document.querySelectorAll(".filtro-espec");
+
+  filters.forEach((filter) => {
+    filter.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      appRoot.replaceChildren();
+
+      especialidadFilter = filter.getAttribute("coc-especialidad");
+      pageCount = 1;
+
+      filters.forEach((btn) => {
+        btn.classList.remove("active");
+      });
+
+      e.target.classList.add("active");
+
+      preloader.classList.remove("d-none");
+
+      isLoading = true;
+
+      setData(
+        `${API_CAPACITACIONES_INICIADAS_URL}?especialidad=${especialidadFilter}&page=${pageCount}`
+      )
+        .then((capacitaciones) => {
+          if (capacitaciones && capacitaciones.length > 0) {
+            appRoot.replaceChildren();
+            fillCapacitaciones(capacitaciones);
+            observer.observe(footer);
+          } else {
+            appRoot.innerHTML =
+              "<p>No existen capacitaciones para esta especialidad.</p>";
+
+            preloader.classList.add("d-none");
+            observer.unobserve(footer);
+          }
+        })
+        .catch((error) => {
+          console.error("Error cargando capacitaciones:", error);
+          preloader.classList.add("d-none");
+        })
+        .finally(() => {
+          isLoading = false;
+        });
+    });
+  });
+}
+
+const filtroMobile = document.getElementById("filtro-espec-mobile");
+
+filtroMobile.addEventListener("change", (e) => {
+  especialidadFilter = e.target.value;
+  pageCount = 1;
+
+  appRoot.replaceChildren();
+
+  const preloader = document.getElementById("preloader");
+  preloader.classList.remove("d-none");
+
+  isLoading = true;
+
+  setData(
+    `${API_CAPACITACIONES_INICIADAS_URL}?especialidad=${especialidadFilter}&page=${pageCount}`
+  )
+    .then((capacitaciones) => {
+      if (capacitaciones && capacitaciones.length > 0) {
+        appRoot.replaceChildren();
+        fillCapacitaciones(capacitaciones);
+        observer.observe(footer);
+      } else {
+        appRoot.innerHTML =
+          "<p>No existen capacitaciones para esta especialidad.</p>";
+
+        preloader.classList.add("d-none");
+        observer.unobserve(footer);
+      }
+    })
+    .catch((error) => {
+      console.error("Error cargando capacitaciones:", error);
+      preloader.classList.add("d-none");
+    })
+    .finally(() => {
+      isLoading = false;
+    });
+});
+
+let especialidadFilter = "";
 let pageCount = 1;
-let isLoading = false; // Flag para evitar múltiples cargas simultáneas
+let isLoading = false;
 
 const footer = document.querySelector("#page.site > footer");
 const appRoot = document.getElementById("app-root");
+const preloader = document.getElementById("preloader");
 
 const observer = new IntersectionObserver(
   (entries, observer) => {
@@ -92,19 +142,42 @@ const observer = new IntersectionObserver(
       if (entry.isIntersecting && !isLoading) {
         isLoading = true;
 
-        const preloader = document.getElementById("preloader");
         preloader.classList.remove("d-none");
 
         try {
-          const capacitaciones = await setData(
-            `${API_CAPACITACIONES_INICIADAS_URL}?page=${pageCount}`
-          );
+          if (especialidadFilter !== "") {
+            const capacitaciones = await setData(
+              `${API_CAPACITACIONES_INICIADAS_URL}?especialidad=${especialidadFilter}&page=${pageCount}`
+            );
+            if (capacitaciones && capacitaciones.length > 0) {
+              fillCapacitaciones(capacitaciones);
+            } else {
+              observer.unobserve(footer);
 
-          if (capacitaciones && capacitaciones.length > 0) {
-            fillCapacitaciones(capacitaciones);
+              const finalMessage = document.createElement("p");
+              finalMessage.classList.add("text-center", "mt-4");
+              finalMessage.textContent = "No existen más capacitaciones.";
+              appRoot.appendChild(finalMessage);
+
+              preloader.classList.add("d-none");
+            }
           } else {
-            observer.unobserve(footer);
-            preloader.classList.add("d-none");
+            const capacitaciones = await setData(
+              `${API_CAPACITACIONES_INICIADAS_URL}?page=${pageCount}`
+            );
+
+            if (capacitaciones && capacitaciones.length > 0) {
+              fillCapacitaciones(capacitaciones);
+            } else {
+              observer.unobserve(footer);
+
+              const finalMessage = document.createElement("p");
+              finalMessage.classList.add("text-center", "mt-4");
+              finalMessage.textContent = "No existen más capacitaciones.";
+              appRoot.appendChild(finalMessage);
+
+              preloader.classList.add("d-none");
+            }
           }
         } catch (error) {
           console.error("Error cargando capacitaciones:", error);
@@ -136,7 +209,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   } catch (error) {
     console.error("Error en carga inicial de capacitaciones:", error);
-    const preloader = document.getElementById("preloader");
+
     preloader.classList.add("d-none");
   }
 });
+
+document.addEventListener("DOMContentLoaded", applyEspecialidadFilter);
