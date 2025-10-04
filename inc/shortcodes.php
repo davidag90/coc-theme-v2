@@ -1,5 +1,6 @@
 <?php
-function capacitaciones_front() {
+function capacitaciones_front()
+{
    ob_start();
 
    $fechaHoy = date('Ymd');
@@ -52,7 +53,7 @@ function capacitaciones_front() {
 
       echo '<div class="d-block d-md-none mb-4" id="filtros-espec-mobile">';
       echo '<select class="form-select">';
-      echo '<option value="todos" selected>Todos</option>';
+      echo '<option value="" selected>Todos</option>';
       foreach ($slugEspecialidadesFilt as $slugEspecialidad) {
          $especialidad = get_term_by('slug', $slugEspecialidad, 'especialidad');
          echo '<option value="' . esc_attr($especialidad->slug) . '">' . esc_html($especialidad->name) . '</option>';
@@ -60,7 +61,7 @@ function capacitaciones_front() {
       echo '</select>'; // .form-select
       echo '</div>'; // #filtros-espec-mobile
       echo '<div class="d-none d-md-flex flex-row flex-wrap justify-content-center mb-4" id="filtros-espec-desk">';
-      echo '<button type="button" class="btn btn-sm btn-todos text-nowrap filtro-espec" coc-especialidad="todos">Todos</button>';
+      echo '<button type="button" class="btn btn-sm btn-todos text-nowrap filtro-espec" coc-especialidad="">Todos</button>';
 
       foreach ($slugEspecialidadesFilt as $slugEspecialidad) {
          $especialidad = get_term_by('slug', $slugEspecialidad, 'especialidad');
@@ -90,7 +91,8 @@ function capacitaciones_front() {
 
 add_shortcode('capacitaciones-front', 'capacitaciones_front');
 
-function capacitaciones_inside() {
+function capacitaciones_inside()
+{
    ob_start();
 
    $hoy = date('Ymd');
@@ -141,9 +143,9 @@ function capacitaciones_inside() {
    echo '<div class="row">';
    echo '<div class="col-12 col-md-4">';
    if ($slugEspecialidadesFilt) {
-      echo '<div class="d-block d-md-none mb-4" id="filtros-espec-mobile">';
+      echo '<div class="d-block d-md-none mb-4" id="filtro-espec-mobile">';
       echo '<select class="form-select">';
-      echo '<option value="todos" selected>Todos</option>';
+      echo '<option value="" selected>Todos</option>';
       foreach ($slugEspecialidadesFilt as $slugEspecialidad) {
          $especialidad = get_term_by('slug', $slugEspecialidad, 'especialidad');
          echo '<option value="' . esc_attr($especialidad->slug) . '">' . esc_html($especialidad->name) . '</option>';
@@ -152,7 +154,7 @@ function capacitaciones_inside() {
       echo '</div>'; // #filtros-espec-mobile
 
       echo '<div class="list-group d-none d-md-block">';
-      echo '<button class="list-group-item list-group-item-action filtro-espec active" coc-especialidad="todos">Todas</button>';
+      echo '<button class="list-group-item list-group-item-action filtro-espec active" coc-especialidad="">Todas</button>';
       foreach ($slugEspecialidadesFilt as $slugEspecialidad) {
          $especialidad = get_term_by('slug', $slugEspecialidad, 'especialidad');
          echo '<button class="list-group-item list-group-item-action filtro-espec" coc-especialidad="' . esc_html($especialidad->slug) . '">' . esc_html($especialidad->name) . '</button>';
@@ -163,11 +165,11 @@ function capacitaciones_inside() {
    echo '<a href="' . home_url() . '/capacitacion/capacitaciones-iniciadas" class="btn btn-success btn-lg d-block my-4 d-none d-md-block"><i class="fa-solid fa-graduation-cap"></i> Ver Capacitaciones Iniciadas</a>';
    echo '</div>'; // .col
    echo '<div class="col-12 col-md-8">';
-   echo '<div id="preloader" class="d-flex justify-content-center align-items-center">';
+   echo '<div id="app-root"></div>'; // #app-root
+   echo '<div id="preloader" class="d-flex justify-content-center align-items-center mt-4">';
    echo '<div class="spinner-border" role="status"></div>';
    echo '<div class="d-flex align-items-center ms-2"><span class="d-block">Cargando...</span></p></div>';
    echo '</div>'; // #preloader
-   echo '<div id="app-root"></div>'; // #app-root
    echo '<a href="' . home_url() . '/capacitacion/capacitaciones-iniciadas" class="btn btn-success btn-lg d-block my-4 d-block d-md-none"><i class="fa-solid fa-graduation-cap"></i> Ver Capacitaciones Iniciadas</a>';
    echo '</div>'; // .col
    echo '</div>'; // .row
@@ -179,18 +181,19 @@ function capacitaciones_inside() {
 add_shortcode('capacitaciones-inside', 'capacitaciones_inside');
 
 
-function mostrar_capacitaciones_iniciadas() {
+function mostrar_capacitaciones_iniciadas()
+{
    ob_start();
 
-   $fechaHoy = date('Ymd');
+   $today = current_time('Ymd');
 
-   $args = array(
+   $query_args = array(
       'post_type' => 'capacitaciones',
-      'posts_per_page' => -1, // Retrieve all posts
+      'posts_per_page' => -1,
       'meta_query' => array(
          array(
             'key' => 'fecha_inicio_dateformat',
-            'value' => $fechaHoy,
+            'value' => $today,
             'compare' => '<=',
             'type' => 'DATE',
          ),
@@ -202,60 +205,56 @@ function mostrar_capacitaciones_iniciadas() {
             'operator' => 'EXISTS',
          ),
       ),
+      'orderby' => 'meta_value',
+      'order' => 'DESC',
+      'meta_key' => 'fecha_inicio_dateformat'
    );
 
-   $query = new WP_Query($args);
+   $posts = new WP_Query($query_args);
+   $terms = [];
 
-   $slugEspecialidades = [];
-
-   if ($query->have_posts()) {
-      while ($query->have_posts()) {
-         $query->the_post();
-
-         $terms = get_the_terms($query->post, 'especialidad');
-
-         foreach ($terms as $term) {
-            $slugEspecialidades[] = $term->slug;
+   if ($posts->have_posts()) {
+      while ($posts->have_posts()) {
+         $posts->the_post();
+         $post_terms = get_the_terms(get_the_ID(), 'especialidad');
+         if ($post_terms && !is_wp_error($post_terms)) {
+            foreach ($post_terms as $term) {
+               if (!in_array($term, $terms)) {
+                  $terms[] = $term;
+               }
+            }
          }
       }
    }
 
-   wp_reset_postdata();
-
-   $slugEspecialidadesFilt = array_unique($slugEspecialidades, SORT_REGULAR);
-
-   sort($slugEspecialidadesFilt);
-
    echo '<div id="capacitaciones-iniciadas">';
    echo '<div class="row">';
-   echo '<div class="col-12 col-md-4">';
-   echo '<div class="d-block d-md-none mb-4" id="filtros-espec-mobile">';
-   echo '<select class="form-select">';
-   echo '<option value="todos" selected>Todos</option>';
-   foreach ($slugEspecialidadesFilt as $slugEspecialidad) {
-      $especialidad = get_term_by('slug', $slugEspecialidad, 'especialidad');
-      echo '<option value="' . esc_attr($especialidad->slug) . '">' . esc_html($especialidad->name) . '</option>';
+   echo '<div class="col-12 col-lg-4">';
+   echo '<div class="d-block d-lg-none mb-4">';
+   echo '<p>Filtrar por especialidad</p>';
+   echo '<select class"form-select mb-4" id="filtro-espec-mobile">';
+   echo '<option value="" selected>Todas</option>';
+   foreach ($terms as $term) {
+      echo '<option value="' . esc_attr($term->slug) . '">' . esc_html($term->name) . '</option>';
    }
    echo '</select>'; // .form-select
-   echo '</div>'; // #filtros-espec-mobile
-
-   echo '<div class="list-group d-none d-md-block">';
-   echo '<button class="list-group-item list-group-item-secondary list-group-item-action filtro-espec active" coc-especialidad="todos">Todas</button>';
-   foreach ($slugEspecialidadesFilt as $slugEspecialidad) {
-      $especialidad = get_term_by('slug', $slugEspecialidad, 'especialidad');
-      echo '<button class="list-group-item list-group-item-secondary list-group-item-action filtro-espec" coc-especialidad="' . esc_html($especialidad->slug) . '">' . esc_html($especialidad->name) . '</button>';
+   echo '</div>'; // .d-block.d-lg-none
+   echo '<div class="list-group d-none d-lg-block" role="group" aria-label="Especialidades">';
+   echo '<button type="button" class="list-group-item list-group-item-action active filtro-espec" coc-especialidad="">Todos</button>';
+   foreach ($terms as $term) {
+      echo '<button type="button" class="list-group-item list-group-item-action filtro-espec" coc-especialidad="' . esc_attr($term->slug) . '">' . esc_html($term->name) . '</button>';
    }
-   echo '</div>';
-   echo '</div>'; // .col
-   echo '<div class="col-12 col-md-8">';
+   echo '</div>'; // .list-group
+   echo '</div>'; // .col-12.col-lg-4
+   echo '<div class="col-12 col-lg-8">';
+   echo '<div id="app-root" class="mb-5"></div>'; // #app-root
    echo '<div id="preloader" class="d-flex justify-content-center align-items-center">';
    echo '<div class="spinner-border" role="status"></div>';
    echo '<div class="d-flex align-items-center ms-2"><span class="d-block">Cargando...</span></p></div>';
    echo '</div>'; // #preloader
-   echo '<div id="app-root"></div>'; // #app-root
    echo '</div>'; // .col
    echo '</div>'; // .row
-   echo '</div>'; // #capacitaciones-inside
+   echo '</div>'; // #capacitaciones-iniciadas
 
    return ob_get_clean();
 }
@@ -263,7 +262,8 @@ function mostrar_capacitaciones_iniciadas() {
 add_shortcode('mostrar-capacitaciones-iniciadas', 'mostrar_capacitaciones_iniciadas');
 
 
-function mostrar_beneficios() {
+function mostrar_beneficios()
+{
    ob_start();
 
    $rubros = get_terms(array(
@@ -309,7 +309,8 @@ function mostrar_beneficios() {
 add_shortcode('mostrar-beneficios', 'mostrar_beneficios');
 
 
-function mostrar_sociedades_filiales() {
+function mostrar_sociedades_filiales()
+{
    ob_start();
 
    echo '<div id="sociedades-filiales">';
@@ -332,7 +333,8 @@ function mostrar_sociedades_filiales() {
 add_shortcode('mostrar-sociedades-filiales', 'mostrar_sociedades_filiales');
 
 
-function mostrar_clasificados() {
+function mostrar_clasificados()
+{
    ob_start();
 
    $args = array(
@@ -375,7 +377,8 @@ function mostrar_clasificados() {
 add_shortcode('mostrar-clasificados', 'mostrar_clasificados');
 
 
-function show_sv_galleries() {
+function show_sv_galleries()
+{
    ob_start();
 
    $args = array(
