@@ -4,3 +4,5 @@ css/main.map
 node_modules
 dist
 dist-theme.sh
+assets/css/main.css
+assets/css/main.css.map
