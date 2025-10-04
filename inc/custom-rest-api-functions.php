@@ -3,9 +3,15 @@ function get_capacitaciones_vigentes(WP_REST_Request $request)
 {
   $today = current_time('Ymd');
 
+  $per_page = $request->get_param('per_page');
+  $page = $request->get_param('page');
+  $offset = ($page - 1) * $per_page;
+  $especialidad = $request->get_param('especialidad');
+
   $query_args = array(
     'post_type' => 'capacitaciones',
-    'nopaging' => 'true',
+    'posts_per_page' => $per_page,
+    'offset' => $offset,
     'meta_query' => array(
       array(
         'key' => 'fecha_inicio_dateformat',
@@ -14,16 +20,19 @@ function get_capacitaciones_vigentes(WP_REST_Request $request)
         'type' => 'DATE',
       ),
     ),
-    'tax_query' => array(
+    'tax_query' => $especialidad ? array(
       array(
         'taxonomy' => 'especialidad',
         'field' => 'slug',
-        'operator' => 'EXISTS',
+        'terms' => array($especialidad),
       ),
-    ),
+    ) : array(),
+    'orderby' => 'meta_value',
+    'order' => 'ASC',
+    'meta_key' => 'fecha_inicio_dateformat'
   );
 
-  return process_capacitaciones($query_args, 1, -1);
+  return process_capacitaciones($query_args, $page, $per_page);
 }
 
 function get_capacitaciones_iniciadas(WP_REST_Request $request)
@@ -33,10 +42,11 @@ function get_capacitaciones_iniciadas(WP_REST_Request $request)
   $per_page = $request->get_param('per_page');
   $page = $request->get_param('page');
   $offset = ($page - 1) * $per_page;
+  $especialidad = $request->get_param('especialidad');
 
   $query_args = array(
     'post_type' => 'capacitaciones',
-    'posts_per_page' => $per_page, // Retrieve all posts
+    'posts_per_page' => $per_page,
     'offset' => $offset,
     'meta_query' => array(
       array(
@@ -46,13 +56,13 @@ function get_capacitaciones_iniciadas(WP_REST_Request $request)
         'type' => 'DATE',
       ),
     ),
-    'tax_query' => array(
+    'tax_query' => $especialidad ? array(
       array(
         'taxonomy' => 'especialidad',
         'field' => 'slug',
-        'operator' => 'EXISTS',
+        'terms' => array($especialidad),
       ),
-    ),
+    ) : array(),
     'orderby' => 'meta_value',
     'order' => 'DESC',
     'meta_key' => 'fecha_inicio_dateformat'
