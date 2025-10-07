@@ -274,7 +274,7 @@ function mostrar_beneficios()
    echo '<div class="row">';
    echo '<div class="col-12 col-md-4">';
    if ($rubros) {
-      echo '<div class="d-block d-md-none mb-4" id="filtros-rubro-mobile">';
+      echo '<div class="d-block d-md-none mb-4" id="filtro-rubro-mobile">';
       echo '<select class="form-select">';
       echo '<option value="todos" selected>Todos</option>';
       foreach ($rubros as $rubro) {
@@ -292,11 +292,11 @@ function mostrar_beneficios()
    }
    echo '</div>'; // .col
    echo '<div class="col-12 col-md-8">';
-   echo '<div id="preloader" class="d-flex justify-content-center align-items-center">';
+   echo '<div id="app-root"></div>'; // #app-root
+   echo '<div id="preloader" class="d-flex justify-content-center align-items-center mt-4">';
    echo '<div class="spinner-border" role="status"></div>';
    echo '<div class="d-flex align-items-center ms-2"><span class="d-block">Cargando...</span></p></div>';
    echo '</div>'; // #preloader
-   echo '<div id="app-root"></div>'; // #app-root
    echo '</div>'; // .col
    echo '</div>'; // .row
    echo '</div>'; // #beneficios
