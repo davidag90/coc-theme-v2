@@ -46,6 +46,7 @@ export async function setDataBeneficios(url) {
   const posts = data.map(async (element) => {
     const {
       id,
+      slug,
       contenido,
       extracto,
       detalles,
@@ -58,6 +59,7 @@ export async function setDataBeneficios(url) {
 
     const post = {
       id: id,
+      slug: slug,
       contenido: contenido,
       extracto: extracto,
       detalles: detalles,
