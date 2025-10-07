@@ -1,6 +1,7 @@
 import { setDataBeneficios } from "./fetch.js";
 
 function createItem(objBeneficio) {
+  console.log(objBeneficio);
   const { slug, extracto, prestador, rubroSlug, thumbnail } = objBeneficio;
   const item = document.createElement("div");
   item.classList.add("card", "border-secondary");
@@ -28,24 +29,22 @@ function createModal(objBeneficio) {
   const { slug, prestador, detalles } = objBeneficio;
   const modal = document.createElement("div");
   modal.classList.add("modal", "fade");
-  modal.setAttribute("id", `modal-${slug}`);
+  modal.id = `modal-${slug}`;
   modal.setAttribute("tabindex", "-1");
   modal.setAttribute("aria-labelledby", `modal-${slug}-label`);
   modal.setAttribute("aria-hidden", "true");
 
   modal.innerHTML = `
-      <div class="modal fade" id="modal-${slug}" tabindex="-1" aria-labelledby="modal-${slug}-label" aria-hidden="true">
-         <div class="modal-dialog">
-            <div class="modal-content">
-               <div class="modal-header">
-                  <h1 class="modal-title fs-5" id="modal-${slug}-label">${prestador}</h1>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-               </div>
-               
-               <div class="modal-body">${detalles}</div>
-            </div>
-         </div>
+    <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="modal-${slug}-label">${prestador}</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          
+          <div class="modal-body">${detalles}</div>
       </div>
+    </div>
    `;
 
   return modal;
@@ -69,6 +68,7 @@ function applyRubroFilter() {
     filter.addEventListener("click", (e) => {
       e.preventDefault();
 
+      modals.replaceChildren();
       appRoot.replaceChildren();
 
       rubroFilter = filter.getAttribute("coc-rubro");
@@ -90,6 +90,7 @@ function applyRubroFilter() {
         .then((beneficios) => {
           if (beneficios && beneficios.length > 0) {
             appRoot.replaceChildren();
+            modals.replaceChildren();
             fillBeneficios(beneficios);
             observer.observe(footer);
           } else {
@@ -118,8 +119,8 @@ filtroMobile.addEventListener("change", (e) => {
   pageCount = 1;
 
   appRoot.replaceChildren();
+  modals.replaceChildren();
 
-  const preloader = document.getElementById("preloader");
   preloader.classList.remove("d-none");
 
   isLoading = true;
@@ -130,6 +131,7 @@ filtroMobile.addEventListener("change", (e) => {
     .then((beneficios) => {
       if (beneficios && beneficios.length > 0) {
         appRoot.replaceChildren();
+        modals.replaceChildren();
         fillCapacitaciones(beneficios);
         observer.observe(footer);
       } else {
