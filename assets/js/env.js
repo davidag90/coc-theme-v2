@@ -6,8 +6,7 @@ const API_CAPACITACIONES_VIGENTES_URL =
   API_BASE_URL + "capacitaciones/vigentes";
 const API_CAPACITACIONES_INICIADAS_URL =
   API_BASE_URL + "capacitaciones/iniciadas";
-const API_BENEFICIOS_URL =
-  WP_API_BASE_URL + "beneficio?_embed&per_page=100&acf_format=standard";
+const API_BENEFICIOS_URL = API_BASE_URL + "beneficios";
 const API_SOCIEDADES_URL =
   WP_API_BASE_URL + "sociedad?_embed&per_page=100&acf_format=standard";
 const API_MEDIA_BASE = API_BASE_URL + "media/";
