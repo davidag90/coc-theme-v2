@@ -23,13 +23,10 @@ function custom_scripts_libs()
 	$theme_ver = wp_get_theme()->get('Version');
 
 	wp_enqueue_script('custom-js', get_stylesheet_directory_uri() . '/assets/js/custom.js', array(), $theme_ver, true);
-	wp_localize_script('custom-js', 'envParams', array(
-		'SITE_URL' => esc_url(home_url()) . '/'
-	));
 
 	wp_enqueue_script('env', get_stylesheet_directory_uri() . '/assets/js/env.js', array(), $theme_ver, false);
 	wp_localize_script('env', 'envParams', array(
-		'SITE_URL' => esc_url(home_url()) . '/'
+		'SITE_URL' => esc_url(home_url())
 	));
 
 	if (is_front_page()) :
