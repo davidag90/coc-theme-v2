@@ -1,4 +1,4 @@
-import { setData } from "./capacitaciones.js";
+import { setData } from "./fetch.js";
 
 function startSplide() {
   const splideCapacitaciones = new Splide(".splide", {

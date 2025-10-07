@@ -1,4 +1,4 @@
-import { setData } from "./capacitaciones.js";
+import { setDataCapacitaciones } from "./fetch.js";
 
 function createItem(objCapacitacion) {
   const card = document.createElement("div");
@@ -63,7 +63,7 @@ function applyEspecialidadFilter() {
 
       isLoading = true;
 
-      setData(
+      setDataCapacitaciones(
         `${API_CAPACITACIONES_INICIADAS_URL}?especialidad=${especialidadFilter}&page=${pageCount}`
       )
         .then((capacitaciones) => {
@@ -103,7 +103,7 @@ filtroMobile.addEventListener("change", (e) => {
 
   isLoading = true;
 
-  setData(
+  setDataCapacitaciones(
     `${API_CAPACITACIONES_INICIADAS_URL}?especialidad=${especialidadFilter}&page=${pageCount}`
   )
     .then((capacitaciones) => {
@@ -146,7 +146,7 @@ const observer = new IntersectionObserver(
 
         try {
           if (especialidadFilter !== "") {
-            const capacitaciones = await setData(
+            const capacitaciones = await setDataCapacitaciones(
               `${API_CAPACITACIONES_INICIADAS_URL}?especialidad=${especialidadFilter}&page=${pageCount}`
             );
             if (capacitaciones && capacitaciones.length > 0) {
@@ -162,7 +162,7 @@ const observer = new IntersectionObserver(
               preloader.classList.add("d-none");
             }
           } else {
-            const capacitaciones = await setData(
+            const capacitaciones = await setDataCapacitaciones(
               `${API_CAPACITACIONES_INICIADAS_URL}?page=${pageCount}`
             );
 
@@ -198,7 +198,7 @@ const observer = new IntersectionObserver(
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    const capacitacionesStart = await setData(
+    const capacitacionesStart = await setDataCapacitaciones(
       `${API_CAPACITACIONES_INICIADAS_URL}?page=${pageCount}`
     );
 
