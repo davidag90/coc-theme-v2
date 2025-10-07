@@ -9,22 +9,29 @@ export async function setDataCapacitaciones(url) {
   const data = response.data;
 
   const posts = data.map(async (element) => {
-    let post = {};
+    const {
+      tipo_capacitacion,
+      especialidad_slug,
+      especialidad_name,
+      dictante_principal,
+      titulo,
+      fecha_inicio,
+      fecha_inicio_df,
+      link,
+      thumbnail,
+    } = element;
 
-    post.tipoCapacitacion = element.tipo_capacitacion;
-    post.especialidadSlug = element.especialidad_slug;
-    post.especialidadNombre = element.especialidad_name;
-    post.dictante = element.dictante_principal;
-    post.titulo = element.titulo;
-    post.fechaInicio = element.fecha_inicio;
-    post.fechaInicioDF = element.fecha_inicio_df;
-    post.link = element.link;
-
-    if (element.thumbnail !== null) {
-      post.thumbnail = element.thumbnail;
-    } else {
-      post.thumbnail = THEME_URL + "img/capacitaciones/placeholder.jpg";
-    }
+    const post = {
+      tipoCapacitacion: tipo_capacitacion,
+      especialidadSlug: especialidad_slug,
+      especialidadNombre: especialidad_name,
+      dictante: dictante_principal,
+      titulo: titulo,
+      fechaInicio: fecha_inicio,
+      fechaInicioDF: fecha_inicio_df,
+      link: link,
+      thumbnail: thumbnail,
+    };
 
     return post;
   });
@@ -49,7 +56,7 @@ export async function setDataBeneficios(url) {
       thumbnail,
     } = element;
 
-    let post = {
+    const post = {
       id: id,
       contenido: contenido,
       extracto: extracto,
@@ -58,6 +65,27 @@ export async function setDataBeneficios(url) {
       rubroSlug: rubro_slug,
       rubroNombre: rubro_name,
       link: link,
+      thumbnail: thumbnail,
+    };
+
+    return post;
+  });
+
+  return Promise.all(posts);
+}
+
+export async function setDataSociedades(url) {
+  const response = await fetchData(url);
+  const data = response.data;
+
+  const posts = data.map(async (element) => {
+    const { slug, title, integrantes, info_adicional, thumbnail } = element;
+
+    const post = {
+      slug: slug,
+      title: title,
+      integrantes: integrantes,
+      infoAdicional: info_adicional,
       thumbnail: thumbnail,
     };
 

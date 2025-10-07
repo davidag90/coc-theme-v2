@@ -232,9 +232,9 @@ function get_beneficio_info($post = null)
   $info_beneficio = [
     "id" => $post_id,
     "slug" => sanitize_text_field($post_slug),
-    "contenido" => sanitize_text_field($post_content),
-    "extracto" => esc_html($post_exracto),
-    "detalles" => sanitize_text_field($post_detalles),
+    "contenido" => $post_content,
+    "extracto" => $post_exracto,
+    "detalles" => $post_detalles,
     "prestador" => sanitize_text_field($post_title),
     "rubro_slug" => sanitize_text_field($post_rubro_slug),
     "rubro_name" => sanitize_text_field($post_rubro_name),
@@ -243,4 +243,62 @@ function get_beneficio_info($post = null)
   ];
 
   return $info_beneficio;
+}
+
+function get_sociedades(WP_REST_Request $request)
+{
+  $query_args = array(
+    'post_type' => 'sociedad',
+    'posts_per_page' => -1,
+    'orderby' => 'title',
+    'order' => 'ASC',
+  );
+
+  $sociedades_query = new WP_Query($query_args);
+  $data = array();
+
+  if ($sociedades_query->have_posts()) {
+    while ($sociedades_query->have_posts()) {
+      $sociedades_query->the_post();
+      $post = get_post();
+
+      $sociedad = get_sociedad_info($post);
+
+      if ($sociedad) {
+        $data[] = $sociedad;
+      }
+    }
+
+    wp_reset_postdata(); // Importante: resetear datos globales
+  }
+
+  return new WP_REST_Response(array(
+    'data' => $data,
+  ), 200);
+}
+
+function get_sociedad_info($post = null)
+{
+  if (!$post || !is_object($post)) {
+    return null;
+  }
+
+  $post_id = $post->ID;
+
+  $post_title = $post->post_title;
+  $post_slug = $post->post_name;
+  $post_integrantes = get_post_meta($post_id, 'integrantes_sociedad', true) ?: '';
+  $post_info_adicional = get_post_meta($post_id, 'info_adicional', true) ?: '';
+  $post_thumbnail = get_the_post_thumbnail_url($post_id, 'medium');
+
+  $info_sociedad = [
+    "id" => $post_id,
+    "slug" => sanitize_text_field($post_slug),
+    "integrantes" => $post_integrantes,
+    "info_adicional" => $post_info_adicional,
+    "title" => sanitize_text_field($post_title),
+    "thumbnail" => esc_url($post_thumbnail) ?: get_stylesheet_uri() . '/img/sociedades/placeholder.jpg',
+  ];
+
+  return $info_sociedad;
 }

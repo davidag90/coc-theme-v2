@@ -76,3 +76,13 @@ register_rest_route('coc-api/v1', '/beneficios', array(
     ),
   ),
 ));
+
+register_rest_route(
+  'coc-api/v1',
+  '/sociedades',
+  array(
+    'methods' => 'GET',
+    'callback' => 'get_sociedades',
+    'permission_callback' => '__return_true',
+  ),
+);
