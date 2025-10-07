@@ -147,3 +147,100 @@ function get_capacitacion_info($post = null)
 
   return $info_capacitacion;
 }
+
+function get_beneficios(WP_REST_Request $request)
+{
+  $per_page = $request->get_param('per_page');
+  $page = $request->get_param('page');
+  $offset = ($page - 1) * $per_page;
+  $rubro = $request->get_param('rubro');
+
+  $query_args = array(
+    'post_type' => 'beneficio',
+    'posts_per_page' => $per_page,
+    'offset' => $offset,
+    'orderby' => 'date',
+    'order' => 'DESC',
+    'tax_query' => $rubro ? array(
+      array(
+        'taxonomy' => 'rubro',
+        'field' => 'slug',
+        'terms' => array($rubro),
+      ),
+    ) : array(),
+  );
+
+  $count_args = $query_args;
+  $count_args['posts_per_page'] = -1;
+  $count_args['fields'] = 'ids';
+  unset($count_args['offset']);
+
+  $count_query = new WP_Query($count_args);
+
+  $total_posts = $count_query->found_posts;
+  $total_pages = ceil($total_posts / $per_page);
+
+  $beneficios_query = new WP_Query($query_args);
+  $data = array();
+
+  if ($beneficios_query->have_posts()) {
+    while ($beneficios_query->have_posts()) {
+      $beneficios_query->the_post();
+      $post = get_post();
+      $beneficio = get_beneficio_info($post);
+
+      if ($beneficio) {
+        $data[] = $beneficio;
+      }
+    }
+
+    wp_reset_postdata(); // Importante: resetear datos globales
+  }
+
+  return new WP_REST_Response(array(
+    'data' => $data,
+    'pagination' => array(
+      'total' => $total_posts,
+      'pages' => $total_pages,
+      'page' => $page,
+      'per_page' => $per_page,
+    )
+  ), 200);
+}
+
+function get_beneficio_info($post = null)
+{
+  if (!$post || !is_object($post)) {
+    return null;
+  }
+
+  $post_id = $post->ID;
+
+  $post_title = $post->post_title;
+  $post_slug = $post->post_name;
+  $post_content = apply_filters('the_content', $post->post_content);
+  $post_exracto = get_the_excerpt($post_id);
+  $post_detalles = get_post_meta($post_id, 'detalles_beneficio', true) ?: '';
+  $post_rubro_terms = get_the_terms($post_id, 'rubro');
+  if ($post_rubro_terms && !is_wp_error($post_rubro_terms)) {
+    $post_rubro_slug = $post_rubro_terms[0]->slug ?? '';
+    $post_rubro_name = $post_rubro_terms[0]->name ?? '';
+  }
+  $post_link = get_permalink($post_id);
+  $post_thumbnail = get_the_post_thumbnail_url($post_id, 'medium') ?: get_stylesheet_uri() . '/img/beneficios/placeholder.jpg';
+
+  $info_beneficio = [
+    "id" => $post_id,
+    "slug" => sanitize_text_field($post_slug),
+    "contenido" => sanitize_text_field($post_content),
+    "extracto" => esc_html($post_exracto),
+    "detalles" => sanitize_text_field($post_detalles),
+    "prestador" => sanitize_text_field($post_title),
+    "rubro_slug" => sanitize_text_field($post_rubro_slug),
+    "rubro_name" => sanitize_text_field($post_rubro_name),
+    "link" => esc_url($post_link),
+    "thumbnail" => esc_url($post_thumbnail),
+  ];
+
+  return $info_beneficio;
+}
