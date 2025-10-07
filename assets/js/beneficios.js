@@ -1,138 +1,238 @@
-async function fetchData(url) {
-  const response = await fetch(url);
-
-  return await response.json();
-}
-
-async function setData(url) {
-  const data = await fetchData(url);
-
-  const posts = data.map(async (element) => {
-    let post = {};
-
-    post.rubroSlug = element._embedded["wp:term"][0][0].slug;
-    post.rubroNombre = element._embedded["wp:term"][0][0].name;
-    post.prestador = element.title.rendered;
-    post.slug = element.slug;
-    post.extracto = element.excerpt.rendered;
-    post.detalles = element.acf.detalles;
-    post.fechaInicio = element.acf.fecha_inicio;
-    post.link = element.link;
-
-    const thumbURL = element?._embedded?.["wp:featuredmedia"]?.[0]?.["media_details"]?.["sizes"]?.["medium"]?.["source_url"] ?? null;
-
-    if (element.featured_media !== null) {
-      post.thumbnail = thumbURL;
-    } else {
-      post.thumbnail = THEME_URL + "img/beneficios/placeholder.jpg";
-    }
-
-    return post;
-  });
-
-  return Promise.all(posts);
-}
+import { setDataBeneficios } from "./fetch.js";
 
 function createItem(objBeneficio) {
-  let item = `
-      <div class="card border-secondary coc-rubro="${objBeneficio.rubroSlug}">
-         <div class="row g-0">
-            <div class="col-sm-4">
-               <img src="${objBeneficio.thumbnail}" class="img-fluid" />
-            </div><!-- .col-sm-4 -->
-            <div class="col-sm-8">
-               <div class="card-body d-flex flex-column h-100">
-                  <h3 class="card-title h5">${objBeneficio.prestador}</h3>
-                  ${objBeneficio.extracto}
-                  <button class="btn btn-sm btn-primary d-inline-block ms-auto mt-auto" data-bs-toggle="modal" data-bs-target="#modal-${objBeneficio.slug}">Más información &rarr;</button>
-               </div><!-- .card-body -->
-            </div><!-- .col-sm-8 -->
-         </div><!-- .row -->
-      </div><!-- .card -->
+  const { slug, extracto, prestador, rubroSlug, thumbnail } = objBeneficio;
+  const item = document.createElement("div");
+  item.classList.add("card", "border-secondary");
+  item.setAttribute("coc-rubro", rubroSlug);
+
+  item.innerHTML = `
+    <div class="row g-0">
+      <div class="col-sm-4">
+          <img src="${thumbnail}" class="img-fluid" />
+      </div><!-- .col-sm-4 -->
+      <div class="col-sm-8">
+          <div class="card-body d-flex flex-column h-100">
+            <h3 class="card-title h5">${prestador}</h3>
+            ${extracto}
+            <button class="btn btn-sm btn-primary d-inline-block ms-auto mt-auto" data-bs-toggle="modal" data-bs-target="#modal-${slug}">Más información &rarr;</button>
+          </div><!-- .card-body -->
+      </div><!-- .col-sm-8 -->
+    </div><!-- .row -->
    `;
 
-  appRoot.innerHTML += item;
+  return item;
 }
 
-function createModals(objBeneficio) {
-  let modal = `
-      <div class="modal fade" id="modal-${objBeneficio.slug}" tabindex="-1" aria-labelledby="modal-${objBeneficio.slug}-label" aria-hidden="true">
+function createModal(objBeneficio) {
+  const { slug, prestador, detalles } = objBeneficio;
+  const modal = document.createElement("div");
+  modal.classList.add("modal", "fade");
+  modal.setAttribute("id", `modal-${slug}`);
+  modal.setAttribute("tabindex", "-1");
+  modal.setAttribute("aria-labelledby", `modal-${slug}-label`);
+  modal.setAttribute("aria-hidden", "true");
+
+  modal.innerHTML = `
+      <div class="modal fade" id="modal-${slug}" tabindex="-1" aria-labelledby="modal-${slug}-label" aria-hidden="true">
          <div class="modal-dialog">
             <div class="modal-content">
                <div class="modal-header">
-                  <h1 class="modal-title fs-5" id="modal-${objBeneficio.slug}-label">${objBeneficio.prestador}</h1>
+                  <h1 class="modal-title fs-5" id="modal-${slug}-label">${prestador}</h1>
                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                </div>
                
-               <div class="modal-body">${objBeneficio.detalles}</div>
+               <div class="modal-body">${detalles}</div>
             </div>
          </div>
       </div>
    `;
 
-  modals.innerHTML += modal;
+  return modal;
 }
 
-function fillBeneficios(jsonBeneficios, rubro = "todos") {
-  let preloader = document.getElementById("preloader");
+function fillBeneficios(jsonBeneficios) {
   preloader.classList.add("d-none");
 
-  // Util function for custom array sorting
-  const reorderArr = (arr, key) => {
-    return arr.sort((a, b) => {
-      if (a[key] < b[key]) return -1;
-      if (a[key] > b[key]) return 1;
-      return 0;
-    });
-  };
-
-  const sortedData = reorderArr(jsonBeneficios, "rubroSlug");
-
-  sortedData.forEach((element) => {
-    if (rubro === "todos") {
-      createItem(element);
-      createModals(element);
-    } else {
-      if (rubro === element.rubroSlug) {
-        createItem(element);
-        createModals(element);
-      }
-    }
+  jsonBeneficios.forEach((beneficio) => {
+    appRoot.appendChild(createItem(beneficio));
+    modals.appendChild(createModal(beneficio));
   });
+
+  pageCount++;
 }
 
-function setFiltros() {
-  const filtros = document.querySelectorAll(".filtro-rubro");
+function applyRubroFilter() {
+  const filters = document.querySelectorAll(".filtro-rubro");
 
-  filtros.forEach((filtro) => {
-    let rubro = filtro.getAttribute("coc-rubro");
+  filters.forEach((filter) => {
+    filter.addEventListener("click", (e) => {
+      e.preventDefault();
 
-    filtro.addEventListener("click", (event) => {
-      appRoot.innerHTML = "";
-      fillBeneficios(beneficios, rubro);
+      appRoot.replaceChildren();
 
-      filtros.forEach((elem) => {
-        elem.classList.remove("active");
+      rubroFilter = filter.getAttribute("coc-rubro");
+      pageCount = 1;
+
+      filters.forEach((btn) => {
+        btn.classList.remove("active");
       });
 
-      event.target.classList.add("active");
+      e.target.classList.add("active");
+
+      preloader.classList.remove("d-none");
+
+      isLoading = true;
+
+      setDataBeneficios(
+        `${API_BENEFICIOS_URL}?rubro=${rubroFilter}&page=${pageCount}`
+      )
+        .then((beneficios) => {
+          if (beneficios && beneficios.length > 0) {
+            appRoot.replaceChildren();
+            fillBeneficios(beneficios);
+            observer.observe(footer);
+          } else {
+            appRoot.innerHTML =
+              "<p>No existen beneficios para esta especialidad.</p>";
+
+            preloader.classList.add("d-none");
+            observer.unobserve(footer);
+          }
+        })
+        .catch((error) => {
+          console.error("Error cargando beneficios:", error);
+          preloader.classList.add("d-none");
+        })
+        .finally(() => {
+          isLoading = false;
+        });
     });
-  });
-
-  const filtrosMobile = document.querySelector("#filtros-rubro-mobile > select");
-
-  filtrosMobile.addEventListener("change", (event) => {
-    let rubro = event.target.value;
-
-    appRoot.innerHTML = "";
-
-    fillBeneficios(beneficios, rubro);
   });
 }
 
-const appRoot = document.getElementById("app-root");
-const modals = document.getElementById("modals");
-const beneficios = await setData(API_BENEFICIOS_URL);
+const filtroMobile = document.getElementById("filtro-rubro-mobile");
 
-document.addEventListener("DOMContentLoaded", fillBeneficios(beneficios));
-document.addEventListener("DOMContentLoaded", setFiltros());
+filtroMobile.addEventListener("change", (e) => {
+  rubroFilter = e.target.value;
+  pageCount = 1;
+
+  appRoot.replaceChildren();
+
+  const preloader = document.getElementById("preloader");
+  preloader.classList.remove("d-none");
+
+  isLoading = true;
+
+  setDataBeneficios(
+    `${API_BENEFICIOS_URL}?rubro=${rubroFilter}&page=${pageCount}`
+  )
+    .then((beneficios) => {
+      if (beneficios && beneficios.length > 0) {
+        appRoot.replaceChildren();
+        fillCapacitaciones(beneficios);
+        observer.observe(footer);
+      } else {
+        appRoot.innerHTML =
+          "<p>No existen beneficios para esta especialidad.</p>";
+
+        preloader.classList.add("d-none");
+        observer.unobserve(footer);
+      }
+    })
+    .catch((error) => {
+      console.error("Error cargando beneficios:", error);
+      preloader.classList.add("d-none");
+    })
+    .finally(() => {
+      isLoading = false;
+    });
+});
+
+let rubroFilter = "";
+let pageCount = 1;
+let isLoading = false;
+
+const appRoot = document.getElementById("app-root");
+const preloader = document.getElementById("preloader");
+const modals = document.getElementById("modals");
+const footer = document.querySelector("#page.site > footer");
+
+const observer = new IntersectionObserver(
+  (entries, observer) => {
+    entries.forEach(async (entry) => {
+      if (entry.isIntersecting && !isLoading) {
+        isLoading = true;
+
+        preloader.classList.remove("d-none");
+
+        try {
+          if (rubroFilter !== "") {
+            const beneficios = await setDataBeneficios(
+              `${API_BENEFICIOS_URL}?rubro=${rubroFilter}&page=${pageCount}`
+            );
+            if (beneficios && beneficios.length > 0) {
+              fillBeneficios(beneficios);
+            } else {
+              observer.unobserve(footer);
+
+              const finalMessage = document.createElement("p");
+              finalMessage.classList.add("text-center", "mt-4");
+              finalMessage.textContent = "No existen más beneficios.";
+              appRoot.appendChild(finalMessage);
+
+              preloader.classList.add("d-none");
+            }
+          } else {
+            const beneficios = await setDataBeneficios(
+              `${API_BENEFICIOS_URL}?page=${pageCount}`
+            );
+
+            if (beneficios && beneficios.length > 0) {
+              fillBeneficios(beneficios);
+            } else {
+              observer.unobserve(footer);
+
+              const finalMessage = document.createElement("p");
+              finalMessage.classList.add("text-center", "mt-4");
+              finalMessage.textContent = "No existen más beneficios.";
+              appRoot.appendChild(finalMessage);
+
+              preloader.classList.add("d-none");
+            }
+          }
+        } catch (error) {
+          console.error("Error cargando beneficios: ", error);
+          preloader.classList.add("d-none");
+        } finally {
+          isLoading = false;
+        }
+      }
+    });
+  },
+  {
+    root: null,
+    rootMargin: "0px",
+    scrollMargin: "0px",
+    threshold: 0.25,
+  }
+);
+
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const beneficiosStart = await setDataBeneficios(
+      API_BENEFICIOS_URL + `?rubro=${rubroFilter}&page=${pageCount}`
+    );
+
+    if (beneficiosStart && beneficiosStart.length > 0) {
+      fillBeneficios(beneficiosStart);
+      observer.observe(footer);
+    }
+  } catch (error) {
+    console.error("Error en carga inicial de beneficios:", error);
+
+    preloader.classList.add("d-none");
+  }
+});
+
+document.addEventListener("DOMContentLoaded", applyRubroFilter);
