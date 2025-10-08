@@ -1,4 +1,4 @@
-import { setData } from "./fetch.js";
+import { setDataCapacitaciones } from "./fetch.js";
 
 function startSplide() {
   const splideCapacitaciones = new Splide(".splide", {
@@ -113,7 +113,9 @@ const appRoot = document.querySelector(
   ".splide > .splide__track > .splide__list"
 );
 const preloader = document.getElementById("preloader");
-const capacitaciones = await setData(API_CAPACITACIONES_VIGENTES_URL);
+const capacitaciones = await setDataCapacitaciones(
+  API_CAPACITACIONES_VIGENTES_URL
+);
 
 document.addEventListener(
   "DOMContentLoaded",
