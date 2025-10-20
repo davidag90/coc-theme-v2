@@ -15,7 +15,7 @@ function createItem(objBeneficio) {
       <div class="col-sm-8">
           <div class="card-body d-flex flex-column h-100">
             <h3 class="card-title h5">${prestador}</h3>
-            ${extracto}
+            <p>${extracto}</p>
             <button class="btn btn-sm btn-primary d-inline-block ms-auto mt-auto" data-bs-toggle="modal" data-bs-target="#modal-${slug}">Más información &rarr;</button>
           </div><!-- .card-body -->
       </div><!-- .col-sm-8 -->
