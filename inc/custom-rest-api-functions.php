@@ -220,7 +220,7 @@ function get_beneficio_info($post = null)
   $post_slug = $post->post_name;
   $post_content = apply_filters('the_content', $post->post_content);
   $post_exracto = get_the_excerpt($post_id);
-  $post_detalles = get_post_meta($post_id, 'detalles_beneficio', true) ?: '';
+  $post_detalles = get_post_meta($post_id, 'detalles', true) ?: '';
   $post_rubro_terms = get_the_terms($post_id, 'rubro');
   if ($post_rubro_terms && !is_wp_error($post_rubro_terms)) {
     $post_rubro_slug = $post_rubro_terms[0]->slug ?? '';
