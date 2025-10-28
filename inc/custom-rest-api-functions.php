@@ -287,8 +287,8 @@ function get_sociedad_info($post = null)
 
   $post_title = $post->post_title;
   $post_slug = $post->post_name;
-  $post_integrantes = get_post_meta($post_id, 'integrantes_sociedad', true) ?: '';
-  $post_info_adicional = get_post_meta($post_id, 'info_adicional', true) ?: '';
+  $post_integrantes = get_field('integrantes') ?: '';
+  $post_info_adicional = get_field('info_adicional') ?: '';
   $post_thumbnail = get_the_post_thumbnail_url($post_id, 'medium');
 
   $info_sociedad = [
