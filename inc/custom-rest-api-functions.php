@@ -16,7 +16,7 @@ function get_capacitaciones_vigentes(WP_REST_Request $request)
       array(
         'key' => 'fecha_inicio_dateformat',
         'value' => $today,
-        'compare' => '>',
+        'compare' => '>=',
         'type' => 'DATE',
       ),
     ),
@@ -52,7 +52,7 @@ function get_capacitaciones_iniciadas(WP_REST_Request $request)
       array(
         'key' => 'fecha_inicio_dateformat',
         'value' => $today,
-        'compare' => '<=',
+        'compare' => '<',
         'type' => 'DATE',
       ),
     ),
